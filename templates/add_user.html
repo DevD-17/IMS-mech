@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}User Management{% endblock %}
+{% block content %}
+
+<section class="panel">
+  <h2>Create New User</h2>
+  <form action="{{ url_for('add_user') }}" method="post" class="form-grid">
+    <input name="username" placeholder="Username" required>
+    <input name="full_name" placeholder="Full name">
+    <input name="password" type="password" placeholder="Password" required>
+    <select name="role_id" required>
+      <option value="" disabled selected>Select role</option>
+      {% for r in roles %}
+        <option value="{{ r[0] }}">{{ r[1] }}</option>
+      {% endfor %}
+    </select>
+    <button type="submit">Create User</button>
+  </form>
+</section>
+
+{% endblock %}

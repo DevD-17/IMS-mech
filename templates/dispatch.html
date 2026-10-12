@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% block title %}Dispatch{% endblock %}
+{% block content %}
+
+<section class="panel">
+  <h2>Create Dispatch Challan</h2>
+  {% if open_sos %}
+  <form action="{{ url_for('create_dispatch') }}" method="post">
+    <div class="form-grid">
+      <select name="sales_order_id" id="so-select" required onchange="loadSoLines()">
+        <option value="" disabled selected>Select sales order</option>
+        {% for so in open_sos %}
+          <option value="{{ so[0] }}">SO-{{ so[0] }} — {{ so[1] }} — {{ so[2] }}</option>
+        {% endfor %}
+      </select>
+      <input name="warranty_months" type="number" min="0" placeholder="Warranty (months)" value="0">
+      <button type="button" onclick="addDispatchLine()">+ Add Item</button>
+    </div>
+    <div id="dispatch-lines">
+      <p class="hint">Select a sales order to load its line items.</p>
+    </div>
+    <div style="margin-top:10px"><button type="submit">Create Dispatch Challan</button></div>
+  </form>
+  {% else %}
+    <p>No pending sales orders. Create one in the Customers page.</p>
+  {% endif %}
+</section>
+
+<section class="panel">
+  <h2>Dispatch Challans</h2>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>DC</th><th>SO</th><th>Customer</th><th>Dispatched At</th><th>Warranty</th></tr>
+      </thead>
+      <tbody>
+      {% for c in challans %}
+        <tr>
+          <td>DC-{{ c[0] }}</td><td>SO-{{ c[1] }}</td>
+          <td>{{ c[2] }}</td><td>{{ c[3] }}</td><td>{{ c[4] }} months</td>
+        </tr>
+      {% else %}
+        <tr><td colspan="5">No dispatch challans yet.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <h3 style="margin-top:16px">Dispatched Items</h3>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>DC</th><th>Item</th><th>Qty</th><th>Serial No.</th><th>Warranty</th></tr>
+      </thead>
+      <tbody>
+      {% for ci in challan_items %}
+        <tr>
+          <td>DC-{{ ci[0] }}</td><td>{{ ci[1] }}</td>
+          <td>{{ ci[2] }}</td><td>{{ ci[3] or '-' }}</td>
+          <td>{{ ci[4] }} months</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<script>
+const soItemsData = {{ so_items | tojson }};
+function addDispatchLine() {
+  const container = document.getElementById('dispatch-lines');
+  const first = container.querySelector('.dispatch-line');
+  if (!first) return;
+  const clone = first.cloneNode(true);
+  clone.querySelectorAll('input').forEach(i => i.value = '');
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.textContent = 'Remove';
+  btn.className = 'danger';
+  btn.onclick = () => clone.remove();
+  clone.appendChild(btn);
+  container.appendChild(clone);
+}
+function loadSoLines() {
+  const soId = parseInt(document.getElementById('so-select').value);
+  const lines = soItemsData.filter(l => l[0] === soId);
+  const div = document.getElementById('dispatch-lines');
+  if (!lines.length) { div.innerHTML = '<p>No line items.</p>'; return; }
+  let html = '';
+  lines.forEach(l => {
+    // l = [sales_order_id, item_id, item_name, quantity, unit_price]
+    html += `<div class="form-grid dispatch-line">
+      <input type="hidden" name="item_id[]" value="${l[1]}">
+      <label>Item: <strong>${l[2]}</strong> (ordered: ${l[3]})</label>
+      <input name="quantity[]" type="number" min="0.01" step="0.01" value="${l[3]}" placeholder="Qty to dispatch">
+      <input name="serial_number[]" placeholder="Serial number (optional)">
+    </div>`;
+  });
+  div.innerHTML = html;
+}
+</script>
+{% endblock %}

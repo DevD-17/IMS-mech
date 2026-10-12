@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+
+<section class="cards">
+  <article><h3>Total Items</h3><p>{{ items|length }}</p></article>
+  <article><h3>Low Stock</h3><p class="low">{{ low_stock|length }}</p></article>
+  <article><h3>Suppliers</h3><p>{{ supplier_count }}</p></article>
+  <article><h3>Open POs</h3><p>{{ open_po_count }}</p></article>
+  <article><h3>Pending Job Orders</h3><p>{{ pending_jo_count }}</p></article>
+  <article><h3>Completed Production</h3><p class="good">{{ completed_jo_count }}</p></article>
+  <article><h3>Pending Sales Orders</h3><p>{{ pending_so_count }}</p></article>
+  <article><h3>Dispatches</h3><p>{{ dispatch_count }}</p></article>
+</section>
+
+<section class="panel">
+  <h2>Low Stock Warnings</h2>
+  {% if low_stock %}
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Code</th><th>Item</th><th>Stock</th><th>Reorder Level</th></tr></thead>
+        <tbody>
+        {% for it in low_stock %}
+          <tr>
+            <td>{{ it[1] }}</td><td>{{ it[2] }}</td>
+            <td class="low">{{ it[6] }}</td><td>{{ it[5] }}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <p class="good">All items are adequately stocked.</p>
+  {% endif %}
+</section>
+
+<section class="panel two-col">
+  <div>
+    <h2>Open Purchase Orders</h2>
+    {% if open_pos %}
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>PO</th><th>Supplier</th><th>Status</th><th>Date</th></tr></thead>
+          <tbody>
+          {% for po in open_pos %}
+            <tr>
+              <td>PO-{{ po[0] }}</td><td>{{ po[1] }}</td>
+              <td><span class="status pending">{{ po[2] }}</span></td>
+              <td>{{ po[3] }}</td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <p>No open purchase orders.</p>
+    {% endif %}
+  </div>
+  <div>
+    <h2>Pending Job Orders</h2>
+    {% if pending_jos %}
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>JO</th><th>Product</th><th>Qty</th><th>Status</th></tr></thead>
+          <tbody>
+          {% for jo in pending_jos %}
+            <tr>
+              <td>JO-{{ jo[0] }}</td><td>{{ jo[1] }}</td>
+              <td>{{ jo[2] }}</td>
+              <td><span class="status pending">{{ jo[3] }}</span></td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <p>No pending job orders.</p>
+    {% endif %}
+  </div>
+</section>
+
+<section class="panel">
+  <h2>Recent Stock Transactions</h2>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Date</th><th>Item</th><th>Type</th><th>Qty</th><th>Unit Cost</th><th>Note</th></tr>
+      </thead>
+      <tbody>
+      {% for tx in recent_tx %}
+        <tr>
+          <td>{{ tx[6] }}</td>
+          <td>{{ tx[1] }}</td>
+          <td><span class="status {{ tx[2]|lower }}">{{ tx[2] }}</span></td>
+          <td>{{ tx[3] }}</td>
+          <td>{{ tx[4] }}</td>
+          <td>{{ tx[5] }}</td>
+        </tr>
+      {% else %}
+        <tr><td colspan="6">No transactions yet.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+{% endblock %}

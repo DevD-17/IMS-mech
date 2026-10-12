@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+{% block title %}Inventory{% endblock %}
+{% block content %}
+
+<section class="panel">
+  <h2>Add Material / Product</h2>
+  <form action="{{ url_for('add_item') }}" method="post" class="form-grid">
+    <input name="item_code" placeholder="Item code (e.g. STEEL-001)" required>
+    <input name="item_name" placeholder="Item name" required>
+    <select name="item_type">
+      <option value="RAW_MATERIAL">Raw Material</option>
+      <option value="WIP">Work in Progress</option>
+      <option value="FINISHED_GOOD">Finished Good</option>
+    </select>
+    <input name="unit" placeholder="Unit (kg, pcs)" value="pcs">
+    <input name="reorder_level" type="number" min="0" step="0.01" placeholder="Reorder level" value="10">
+    <input name="unit_cost" type="number" min="0" step="0.01" placeholder="Unit cost" value="0">
+    <input name="description" placeholder="Description (optional)">
+    <button type="submit">Add Item</button>
+  </form>
+</section>
+
+<section class="panel two-col">
+  <div>
+    <h2>Receive Stock (Manual)</h2>
+    <form action="{{ url_for('receive') }}" method="post" class="form-grid">
+      <select name="item_id" required>
+        <option value="" disabled selected>Select item</option>
+        {% for item in items %}
+          <option value="{{ item[0] }}">{{ item[2] }} ({{ item[1] }})</option>
+        {% endfor %}
+      </select>
+      <input name="quantity" type="number" min="0.01" step="0.01" placeholder="Quantity" required>
+      <input name="unit_cost" type="number" min="0" step="0.01" placeholder="Unit cost" value="0">
+      <input name="heat_lot_no" placeholder="Heat / Lot No.">
+      <input name="mtc_reference" placeholder="MTC / MTR Reference">
+      <button type="submit">Receive</button>
+    </form>
+  </div>
+  <div>
+    <h2>Dispatch Stock (Manual)</h2>
+    <form action="{{ url_for('dispatch_manual') }}" method="post" class="form-grid">
+      <select name="item_id" required>
+        <option value="" disabled selected>Select item</option>
+        {% for item in items %}
+          <option value="{{ item[0] }}">{{ item[2] }} ({{ item[1] }})</option>
+        {% endfor %}
+      </select>
+      <input name="quantity" type="number" min="0.01" step="0.01" placeholder="Quantity" required>
+      <button type="submit">Dispatch</button>
+    </form>
+  </div>
+</section>
+
+<section class="panel">
+  <h2>Current Inventory</h2>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Code</th><th>Item</th><th>Type</th><th>Stock</th>
+          <th>Unit</th><th>Unit Cost</th><th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for item in items %}
+        <tr>
+          <td>{{ item[1] }}</td>
+          <td>{{ item[2] }}</td>
+          <td>{{ item[3] }}</td>
+          <td>{{ item[6] }}</td>
+          <td>{{ item[4] }}</td>
+          <td>{{ item[7] }}</td>
+          <td>
+            {% if item[6] <= item[5] %}
+              <span class="low">Low Stock</span>
+            {% else %}
+              <span class="good">In Stock</span>
+            {% endif %}
+          </td>
+        </tr>
+      {% else %}
+        <tr><td colspan="7">No items yet.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="panel">
+  <h2>Stock Transaction History</h2>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Date</th><th>Item</th><th>Type</th><th>Qty</th>
+          <th>Unit Cost</th><th>Heat/Lot</th><th>MTC</th><th>Note</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for tx in transactions %}
+        <tr>
+          <td>{{ tx[8] }}</td>
+          <td>{{ tx[1] }}</td>
+          <td><span class="status {{ tx[2]|lower }}">{{ tx[2] }}</span></td>
+          <td>{{ tx[3] }}</td>
+          <td>{{ tx[4] }}</td>
+          <td>{{ tx[5] or '-' }}</td>
+          <td>{{ tx[6] or '-' }}</td>
+          <td>{{ tx[7] }}</td>
+        </tr>
+      {% else %}
+        <tr><td colspan="8">No transactions recorded.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+{% endblock %}

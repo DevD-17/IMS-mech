@@ -1,0 +1,207 @@
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: #f3f6fb;
+  color: #1f2937;
+  font-family: 'Segoe UI', Arial, sans-serif;
+}
+
+header {
+  background: #16324f;
+  color: white;
+  padding: 16px 6% 0;
+}
+
+.header-inner h1 {
+  margin: 0;
+  font-size: 24px;
+}
+
+.header-inner p {
+  margin: 2px 0 12px;
+  color: #d7e5f4;
+  font-size: 13px;
+}
+
+nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding-bottom: 10px;
+}
+
+nav a {
+  color: #d7e5f4;
+  text-decoration: none;
+  padding: 8px 14px;
+  border-radius: 6px 6px 0 0;
+  font-size: 14px;
+}
+
+nav a:hover { background: #1e456e; color: white; }
+
+nav .user-tag {
+  margin-left: auto;
+  align-self: center;
+  font-size: 13px;
+  color: #a8c5e0;
+}
+
+nav .logout {
+  background: #b42318;
+  color: white;
+  border-radius: 6px;
+}
+
+main {
+  max-width: 1200px;
+  margin: 25px auto;
+  padding: 0 20px 40px;
+}
+
+footer {
+  text-align: center;
+  color: #64748b;
+  font-size: 12px;
+  padding: 20px;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.cards article, .panel {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px #172b4d12;
+}
+
+.cards article { text-align: center; }
+.cards article h3 { margin: 0 0 8px; font-size: 13px; color: #64748b; font-weight: 600; }
+.cards article p { font-size: 30px; font-weight: bold; margin: 0; }
+
+.panel { margin-bottom: 18px; }
+.panel h2 { margin-top: 0; font-size: 19px; color: #16324f; }
+.panel h3 { color: #1e456e; }
+
+.form-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.form-grid label { font-size: 14px; }
+
+input, select, button {
+  padding: 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+input, select {
+  flex: 1;
+  min-width: 140px;
+  background: white;
+}
+
+input:focus, select:focus {
+  outline: 2px solid #1769aa;
+  border-color: #1769aa;
+}
+
+button {
+  background: #1769aa;
+  color: white;
+  border: none;
+  cursor: pointer;
+  padding: 10px 18px;
+  font-weight: 600;
+}
+
+button:hover { background: #124e80; }
+
+button.secondary { background: #475569; }
+button.secondary:hover { background: #334155; }
+
+button.danger { background: #b42318; padding: 6px 12px; font-size: 12px; }
+button.danger:hover { background: #8f1d14; }
+
+.table-wrap { overflow-x: auto; }
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+th, td {
+  text-align: left;
+  padding: 10px 12px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+th { background: #f8fafc; color: #475569; font-weight: 600; }
+tfoot td { font-weight: bold; background: #f8fafc; }
+
+.low { color: #b42318; font-weight: bold; }
+.good { color: #16803c; font-weight: bold; }
+
+.status {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.status.pending, .status.planned { background: #fef3c7; color: #92400e; }
+.status.open, .status.partially_received, .status.partially_dispatched { background: #dbeafe; color: #1e40af; }
+.status.received, .status.completed, .status.dispatched { background: #d1fae5; color: #065f46; }
+.status.draft { background: #e2e8f0; color: #334155; }
+.status.receipt { background: #d1fae5; color: #065f46; }
+.status.dispatch { background: #fee2e2; color: #991b1b; }
+.status.consumption { background: #fef3c7; color: #92400e; }
+.status.production { background: #dbeafe; color: #1e40af; }
+
+.flash-box { margin-bottom: 18px; }
+
+.message {
+  padding: 12px 16px;
+  background: #e0f2fe;
+  border-left: 4px solid #1769aa;
+  border-radius: 6px;
+  margin: 0 0 8px;
+}
+
+.hint { color: #64748b; font-size: 13px; }
+
+.login-panel {
+  max-width: 420px;
+  margin: 60px auto;
+}
+
+.two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+@media (max-width: 768px) {
+  .two-col { grid-template-columns: 1fr; }
+  nav .user-tag { margin-left: 0; }
+}
+
+.po-line, .so-line, .routing-line, .dispatch-line {
+  margin-top: 8px;
+  padding: 10px;
+  background: #f8fafc;
+  border-radius: 6px;
+}

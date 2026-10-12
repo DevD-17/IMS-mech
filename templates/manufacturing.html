@@ -1,0 +1,180 @@
+{% extends "base.html" %}
+{% block title %}Manufacturing{% endblock %}
+{% block content %}
+
+<section class="panel">
+  <h2>Bill of Materials (BOM)</h2>
+  {% if items|length >= 2 %}
+  <form action="{{ url_for('add_bom') }}" method="post" class="form-grid">
+    <select name="parent_item_id" required>
+      <option value="" disabled selected>Finished product</option>
+      {% for it in items %}
+        <option value="{{ it[0] }}">{{ it[2] }} ({{ it[1] }})</option>
+      {% endfor %}
+    </select>
+    <select name="component_item_id" required>
+      <option value="" disabled selected>Component / raw material</option>
+      {% for it in items %}
+        <option value="{{ it[0] }}">{{ it[2] }} ({{ it[1] }})</option>
+      {% endfor %}
+    </select>
+    <input name="quantity_required" type="number" min="0.01" step="0.001" placeholder="Qty required" required>
+    <input name="kerf_loss" type="number" min="0" step="0.001" placeholder="Kerf loss" value="0">
+    <input name="scrap_factor" type="number" min="0" step="0.001" placeholder="Scrap factor" value="0">
+    <button type="submit">Add BOM Line</button>
+  </form>
+  {% else %}
+    <p>Add at least two items first.</p>
+  {% endif %}
+
+  {% if boms %}
+  <h3 style="margin-top:16px">Existing BOMs</h3>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Product</th><th>Component</th><th>Qty Req</th><th>Kerf Loss</th><th>Scrap Factor</th></tr>
+      </thead>
+      <tbody>
+      {% for bom in boms %}
+        <tr>
+          <td>{{ bom[1] }}</td><td>{{ bom[2] }}</td>
+          <td>{{ bom[3] }}</td><td>{{ bom[4] }}</td><td>{{ bom[5] }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+</section>
+
+<section class="panel">
+  <h2>Create Job Order</h2>
+  {% if items %}
+  <form action="{{ url_for('create_job_order') }}" method="post">
+    <div class="form-grid">
+      <select name="product_item_id" required>
+        <option value="" disabled selected>Product to manufacture</option>
+        {% for it in items %}
+          <option value="{{ it[0] }}">{{ it[2] }} ({{ it[1] }})</option>
+        {% endfor %}
+      </select>
+      <input name="planned_quantity" type="number" min="0.01" step="0.01" placeholder="Planned quantity" required>
+      <button type="button" onclick="addRoutingLine()">+ Add Work Center</button>
+    </div>
+    <div id="routing-lines">
+      <div class="form-grid routing-line">
+        <select name="work_center_id[]">
+          <option value="">-- None --</option>
+          {% for wc in work_centers %}
+            <option value="{{ wc[0] }}">{{ wc[1] }} ({{ wc[2] }})</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+    <div style="margin-top:10px"><button type="submit">Create Job Order</button></div>
+  </form>
+  {% else %}
+    <p>Add a finished-good item first.</p>
+  {% endif %}
+</section>
+
+<section class="panel">
+  <h2>Complete Job Order</h2>
+  {% if job_orders %}
+  <form action="{{ url_for('complete_job_order') }}" method="post" class="form-grid">
+    <select name="job_order_id" required>
+      <option value="" disabled selected>Select job order</option>
+      {% for jo in job_orders %}
+        {% if jo[3] != 'COMPLETED' %}
+          <option value="{{ jo[0] }}">JO-{{ jo[0] }} — {{ jo[1] }} — Qty: {{ jo[2] }} — {{ jo[3] }}</option>
+        {% endif %}
+      {% endfor %}
+    </select>
+    <input name="scrap_quantity" type="number" min="0" step="0.01" placeholder="Scrap qty" value="0">
+    <input name="recovery_value" type="number" min="0" step="0.01" placeholder="Recovery value" value="0">
+    <input name="notes" placeholder="Scrap notes">
+    <button type="submit">Complete &amp; Produce</button>
+  </form>
+  {% else %}
+    <p>No job orders yet.</p>
+  {% endif %}
+</section>
+
+<section class="panel">
+  <h2>Job Orders</h2>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>JO</th><th>Product</th><th>Planned Qty</th><th>Status</th><th>Created</th></tr>
+      </thead>
+      <tbody>
+      {% for jo in job_orders %}
+        <tr>
+          <td>JO-{{ jo[0] }}</td><td>{{ jo[1] }}</td>
+          <td>{{ jo[2] }}</td>
+          <td><span class="status {{ jo[3]|lower }}">{{ jo[3] }}</span></td>
+          <td>{{ jo[4] }}</td>
+        </tr>
+      {% else %}
+        <tr><td colspan="5">No job orders.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="panel two-col">
+  <div>
+    <h2>Routing</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>JO</th><th>Seq</th><th>Work Center</th><th>Status</th></tr></thead>
+        <tbody>
+        {% for r in routings %}
+          <tr>
+            <td>JO-{{ r[1] }}</td><td>{{ r[2] }}</td>
+            <td>{{ r[3] }}</td>
+            <td><span class="status {{ r[4]|lower }}">{{ r[4] }}</span></td>
+          </tr>
+        {% else %}
+          <tr><td colspan="4">No routing records.</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div>
+    <h2>Scrap Recovery Logs</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>JO</th><th>Item</th><th>Scrap Qty</th><th>Recovery</th><th>Date</th></tr></thead>
+        <tbody>
+        {% for s in scrap_logs %}
+          <tr>
+            <td>JO-{{ s[1] }}</td><td>{{ s[2] }}</td>
+            <td>{{ s[3] }}</td><td>{{ s[4] }}</td><td>{{ s[6] }}</td>
+          </tr>
+        {% else %}
+          <tr><td colspan="5">No scrap logs.</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<script>
+function addRoutingLine() {
+  const container = document.getElementById('routing-lines');
+  const first = container.querySelector('.routing-line');
+  const clone = first.cloneNode(true);
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.textContent = 'Remove';
+  btn.className = 'danger';
+  btn.onclick = () => clone.remove();
+  clone.appendChild(btn);
+  container.appendChild(clone);
+}
+</script>
+{% endblock %}

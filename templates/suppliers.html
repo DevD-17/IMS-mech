@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Suppliers{% endblock %}
+{% block content %}
+
+<section class="panel">
+  <h2>Add Supplier</h2>
+  <form action="{{ url_for('add_supplier') }}" method="post" class="form-grid">
+    <input name="name" placeholder="Supplier name" required>
+    <input name="contact_name" placeholder="Contact person">
+    <input name="phone" placeholder="Phone">
+    <input name="email" placeholder="Email">
+    <input name="address" placeholder="Address">
+    <button type="submit">Add Supplier</button>
+  </form>
+</section>
+
+<section class="panel">
+  <h2>Suppliers</h2>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>ID</th><th>Name</th><th>Contact</th><th>Phone</th><th>Email</th><th>Address</th></tr>
+      </thead>
+      <tbody>
+      {% for s in suppliers %}
+        <tr>
+          <td>{{ s[0] }}</td>
+          <td>{{ s[1] }}</td>
+          <td>{{ s[2] or '-' }}</td>
+          <td>{{ s[3] or '-' }}</td>
+          <td>{{ s[4] or '-' }}</td>
+          <td>{{ s[5] or '-' }}</td>
+        </tr>
+      {% else %}
+        <tr><td colspan="6">No suppliers yet.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+{% endblock %}
