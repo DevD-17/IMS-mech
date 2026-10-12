@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+{% block title %}Reports{% endblock %}
+{% block content %}
+
+<section class="cards">
+  <article><h3>Total Inventory Value</h3><p>{{ '%.2f'|format(total_inventory_value) }}</p></article>
+  <article><h3>Total Sales</h3><p>{{ '%.2f'|format(total_sales) }}</p></article>
+  <article><h3>Scrap Recovery Value</h3><p>{{ '%.2f'|format(total_scrap_recovery) }}</p></article>
+</section>
+
+<section class="panel">
+  <h2>Inventory Valuation (Weighted Average)</h2>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Code</th><th>Item</th><th>Type</th><th>Stock</th><th>Unit</th><th>Stock Value</th></tr>
+      </thead>
+      <tbody>
+      {% for v in valuation %}
+        <tr>
+          <td>{{ v[1] }}</td><td>{{ v[2] }}</td><td>{{ v[3] }}</td>
+          <td>{{ v[5] }}</td><td>{{ v[4] }}</td>
+          <td>{{ '%.2f'|format(v[6]) }}</td>
+        </tr>
+      {% else %}
+        <tr><td colspan="6">No inventory.</td></tr>
+      {% endfor %}
+      </tbody>
+      <tfoot>
+        <tr>
+          <td colspan="5"><strong>Total Inventory Value</strong></td>
+          <td><strong>{{ '%.2f'|format(total_inventory_value) }}</strong></td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+</section>
+
+<section class="panel">
+  <h2>FIFO Valuation Layers</h2>
+  <p class="hint">Remaining stock grouped by receipt batch (oldest first) for FIFO costing.</p>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Batch</th><th>Item</th><th>Remaining Qty</th><th>Unit Cost</th><th>Heat/Lot</th><th>MTC</th><th>Received</th></tr>
+      </thead>
+      <tbody>
+      {% for b in fifo_layers %}
+        <tr>
+          <td>{{ b[0] }}</td><td>{{ b[1] }}</td>
+          <td>{{ b[2] }}</td><td>{{ b[3] }}</td>
+          <td>{{ b[4] or '-' }}</td><td>{{ b[5] or '-' }}</td>
+          <td>{{ b[6] }}</td>
+        </tr>
+      {% else %}
+        <tr><td colspan="7">No FIFO layers.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="panel">
+  <h2>Stock Movement History</h2>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Date</th><th>Item</th><th>Type</th><th>Qty</th><th>Unit Cost</th><th>Heat/Lot</th><th>MTC</th><th>Note</th></tr>
+      </thead>
+      <tbody>
+      {% for tx in transactions %}
+        <tr>
+          <td>{{ tx[8] }}</td><td>{{ tx[1] }}</td>
+          <td><span class="status {{ tx[2]|lower }}">{{ tx[2] }}</span></td>
+          <td>{{ tx[3] }}</td><td>{{ tx[4] }}</td>
+          <td>{{ tx[5] or '-' }}</td><td>{{ tx[6] or '-' }}</td>
+          <td>{{ tx[7] }}</td>
+        </tr>
+      {% else %}
+        <tr><td colspan="8">No transactions.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="panel two-col">
+  <div>
+    <h2>Scrap Recovery Log</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>JO</th><th>Item</th><th>Scrap Qty</th><th>Recovery</th><th>Date</th></tr></thead>
+        <tbody>
+        {% for s in scrap_logs %}
+          <tr>
+            <td>JO-{{ s[1] }}</td><td>{{ s[2] }}</td>
+            <td>{{ s[3] }}</td><td>{{ s[4] }}</td><td>{{ s[5] }}</td>
+          </tr>
+        {% else %}
+          <tr><td colspan="5">No scrap logs.</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div>
+    <h2>Sales Summary</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>SO</th><th>Customer</th><th>Status</th><th>Amount</th></tr></thead>
+        <tbody>
+        {% for s in sales_summary %}
+          <tr>
+            <td>SO-{{ s[0] }}</td><td>{{ s[1] }}</td>
+            <td><span class="status {{ s[2]|lower }}">{{ s[2] }}</span></td>
+            <td>{{ s[3] }}</td>
+          </tr>
+        {% else %}
+          <tr><td colspan="4">No sales orders.</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+{% endblock %}

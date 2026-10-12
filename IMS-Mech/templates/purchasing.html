@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+{% block title %}Purchasing{% endblock %}
+{% block content %}
+
+<section class="panel">
+  <h2>Create Purchase Order</h2>
+  <form action="{{ url_for('create_po') }}" method="post">
+    <div class="form-grid">
+      <select name="supplier_id" required>
+        <option value="" disabled selected>Select supplier</option>
+        {% for s in suppliers %}
+          <option value="{{ s[0] }}">{{ s[1] }}</option>
+        {% endfor %}
+      </select>
+      <button type="button" onclick="addPoLine()">+ Add Line Item</button>
+    </div>
+    <div id="po-lines">
+      <div class="po-line form-grid">
+        <select name="item_id[]" required>
+          <option value="" disabled selected>Item</option>
+          {% for it in items %}
+            <option value="{{ it[0] }}">{{ it[2] }} ({{ it[1] }})</option>
+          {% endfor %}
+        </select>
+        <input name="quantity[]" type="number" min="0.01" step="0.01" placeholder="Quantity" required>
+        <input name="unit_price[]" type="number" min="0" step="0.01" placeholder="Unit price" value="0">
+      </div>
+    </div>
+    <div style="margin-top:10px">
+      <button type="submit">Create Purchase Order</button>
+    </div>
+  </form>
+  <form action="{{ url_for('generate_reorder_po') }}" method="post" style="margin-top:10px">
+    <button type="submit" class="secondary">Generate Reorder POs (low-stock raw materials)</button>
+  </form>
+</section>
+
+<section class="panel">
+  <h2>Receive Purchase Order (GRN)</h2>
+  {% if pos %}
+  <form action="{{ url_for('receive_po') }}" method="post">
+    <div class="form-grid">
+      <select name="po_id" id="po-select" required onchange="loadPoLines()">
+        <option value="" disabled selected>Select PO</option>
+        {% for po in pos %}
+          <option value="{{ po[0] }}">PO-{{ po[0] }} — {{ po[1] }} — {{ po[2] }}</option>
+        {% endfor %}
+      </select>
+      <button type="submit">Receive Selected Lines</button>
+    </div>
+    <div id="po-receive-lines">
+      <p class="hint">Select a purchase order to view its line items and enter receipt quantities.</p>
+    </div>
+  </form>
+  {% else %}
+    <p>No purchase orders yet. Create one above.</p>
+  {% endif %}
+</section>
+
+<section class="panel">
+  <h2>Purchase Orders</h2>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>PO</th><th>Supplier</th><th>Status</th><th>Date</th><th>Total</th></tr>
+      </thead>
+      <tbody>
+      {% for po in pos %}
+        <tr>
+          <td>PO-{{ po[0] }}</td>
+          <td>{{ po[1] }}</td>
+          <td><span class="status {{ po[2]|lower }}">{{ po[2] }}</span></td>
+          <td>{{ po[3] }}</td>
+          <td>{{ po[5] }}</td>
+        </tr>
+      {% else %}
+        <tr><td colspan="5">No purchase orders.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <h3 style="margin-top:16px">PO Line Items</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>PO</th><th>Item</th><th>Qty</th><th>Unit Price</th></tr></thead>
+      <tbody>
+      {% for pi in po_items %}
+        <tr>
+          <td>PO-{{ pi[0] }}</td><td>{{ pi[2] }}</td>
+          <td>{{ pi[3] }}</td><td>{{ pi[4] }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="panel">
+  <h2>Goods Receipt Notes (GRNs)</h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>GRN</th><th>PO</th><th>Received At</th><th>Lines</th><th>Total Qty</th></tr></thead>
+      <tbody>
+      {% for g in grns %}
+        <tr>
+          <td>GRN-{{ g[0] }}</td><td>PO-{{ g[1] }}</td>
+          <td>{{ g[2] }}</td><td>{{ g[3] }}</td><td>{{ g[4] }}</td>
+        </tr>
+      {% else %}
+        <tr><td colspan="5">No GRNs yet.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<script>
+const poItemsData = {{ po_items | tojson }};
+function addPoLine() {
+  const container = document.getElementById('po-lines');
+  const first = container.querySelector('.po-line');
+  const clone = first.cloneNode(true);
+  clone.querySelectorAll('input').forEach(i => i.value = '');
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.textContent = 'Remove';
+  btn.className = 'danger';
+  btn.onclick = () => clone.remove();
+  clone.appendChild(btn);
+  container.appendChild(clone);
+}
+function loadPoLines() {
+  const poId = parseInt(document.getElementById('po-select').value);
+  const lines = poItemsData.filter(l => l[0] === poId);
+  const div = document.getElementById('po-receive-lines');
+  if (!lines.length) { div.innerHTML = '<p>No line items.</p>'; return; }
+  let html = '';
+  lines.forEach(l => {
+    html += `<div class="form-grid po-line">
+      <input type="hidden" name="receive_item_id[]" value="${l[1]}">
+      <label>Item: <strong>${l[2]}</strong> (ordered: ${l[3]})</label>
+      <input name="receive_qty[]" type="number" min="0" step="0.01" value="${l[3]}" placeholder="Qty to receive">
+      <input name="heat_${l[1]}" placeholder="Heat/Lot No">
+      <input name="mtc_${l[1]}" placeholder="MTC Reference">
+    </div>`;
+  });
+  div.innerHTML = html;
+}
+</script>
+{% endblock %}

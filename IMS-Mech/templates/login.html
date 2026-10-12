@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Login{% endblock %}
+{% block content %}
+<section class="panel login-panel">
+  <h2>Login to IMS-Mech</h2>
+  <form action="{{ url_for('login') }}" method="post" class="form-grid">
+    <input name="username" placeholder="Username (admin)" required autofocus>
+    <input name="password" type="password" placeholder="Password (admin123)" required>
+    <button type="submit">Login</button>
+  </form>
+  <p class="hint">Default admin credentials: <strong>admin / admin123</strong></p>
+</section>
+{% endblock %}

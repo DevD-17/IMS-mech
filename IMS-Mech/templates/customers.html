@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+{% block title %}Customers{% endblock %}
+{% block content %}
+
+<section class="panel">
+  <h2>Add Customer</h2>
+  <form action="{{ url_for('add_customer') }}" method="post" class="form-grid">
+    <input name="customer_name" placeholder="Customer name" required>
+    <input name="contact_name" placeholder="Contact person">
+    <input name="phone" placeholder="Phone">
+    <input name="email" placeholder="Email">
+    <input name="address" placeholder="Address">
+    <button type="submit">Add Customer</button>
+  </form>
+</section>
+
+<section class="panel">
+  <h2>Customers</h2>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>ID</th><th>Name</th><th>Contact</th><th>Phone</th><th>Email</th><th>Address</th></tr>
+      </thead>
+      <tbody>
+      {% for c in customers %}
+        <tr>
+          <td>{{ c[0] }}</td><td>{{ c[1] }}</td>
+          <td>{{ c[2] or '-' }}</td><td>{{ c[3] or '-' }}</td>
+          <td>{{ c[4] or '-' }}</td><td>{{ c[5] or '-' }}</td>
+        </tr>
+      {% else %}
+        <tr><td colspan="6">No customers yet.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="panel">
+  <h2>Create Sales Order</h2>
+  {% if customers and items %}
+  <form action="{{ url_for('create_sales_order') }}" method="post">
+    <div class="form-grid">
+      <select name="customer_id" required>
+        <option value="" disabled selected>Select customer</option>
+        {% for c in customers %}
+          <option value="{{ c[0] }}">{{ c[1] }}</option>
+        {% endfor %}
+      </select>
+      <button type="button" onclick="addSoLine()">+ Add Line Item</button>
+    </div>
+    <div id="so-lines">
+      <div class="so-line form-grid">
+        <select name="item_id[]" required>
+          <option value="" disabled selected>Item</option>
+          {% for it in items %}
+            <option value="{{ it[0] }}">{{ it[2] }} ({{ it[1] }})</option>
+          {% endfor %}
+        </select>
+        <input name="quantity[]" type="number" min="0.01" step="0.01" placeholder="Quantity" required>
+        <input name="unit_price[]" type="number" min="0" step="0.01" placeholder="Unit price" value="0">
+      </div>
+    </div>
+    <div style="margin-top:10px"><button type="submit">Create Sales Order</button></div>
+  </form>
+  {% else %}
+    <p>Add a customer and at least one item first.</p>
+  {% endif %}
+</section>
+
+<section class="panel">
+  <h2>Sales Orders</h2>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>SO</th><th>Customer</th><th>Status</th><th>Date</th><th>Total</th></tr>
+      </thead>
+      <tbody>
+      {% for so in sales_orders %}
+        <tr>
+          <td>SO-{{ so[0] }}</td><td>{{ so[1] }}</td>
+          <td><span class="status {{ so[2]|lower }}">{{ so[2] }}</span></td>
+          <td>{{ so[3] }}</td><td>{{ so[4] }}</td>
+        </tr>
+      {% else %}
+        <tr><td colspan="5">No sales orders.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <h3 style="margin-top:16px">Sales Order Line Items</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>SO</th><th>Item</th><th>Qty</th><th>Unit Price</th></tr></thead>
+      <tbody>
+      {% for si in so_items %}
+        <tr>
+          <td>SO-{{ si[0] }}</td><td>{{ si[1] }}</td>
+          <td>{{ si[2] }}</td><td>{{ si[3] }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<script>
+function addSoLine() {
+  const container = document.getElementById('so-lines');
+  const first = container.querySelector('.so-line');
+  const clone = first.cloneNode(true);
+  clone.querySelectorAll('input').forEach(i => i.value = '');
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.textContent = 'Remove';
+  btn.className = 'danger';
+  btn.onclick = () => clone.remove();
+  clone.appendChild(btn);
+  container.appendChild(clone);
+}
+</script>
+{% endblock %}
